@@ -48,28 +48,35 @@ async def amain():
             return;
 
         try:
-            args = None
+            content_string = None
+            me_tag = f"<@!{client.user.id}>"
 
             if botutil.is_dm_channel(message.channel):
-                args = message.content.split()
-                if len(args) > 0:
-                    if args[0] == f"<@!{client.user.id}>":
-                        args = args[1:]
-                else:
-                    args = None
+                content_string = message.content
+                if content_string.startswith(me_tag):
+                    content_string = content_string[len(me_tag):]
             else:
                 is_mentioned = any((m.id == client.user.id for m in message.mentions))
-                if is_mentioned and message.content.startswith(f"<@!{client.user.id}>"):
-                    args = message.content.split()[1:]
+                if is_mentioned and message.content.startswith(me_tag):
+                    content_string = message.content[len(me_tag):]
 
-            if args is not None:
+            if content_string is not None:
+                args = content_string.split()
+
                 if len(args) == 0:
                     args.append('help')
+                    cmd = 'help'
+                else:
+                    split = content_string.split(None, 1)
+                    cmd = split[0]
+                    content_string = '' if len(split) < 2 else split[1]
+                    args = args[1:]
 
-                handler = handlers.get(args[0], None)
+                handler = handlers.get(cmd, None)
+
                 ok = False
                 if handler:
-                    ok = await handler(message, *args[1:])
+                    ok = await handler(message, args, raw=content_string)
                 if not ok:
                     await message.add_reaction('❓')
 
