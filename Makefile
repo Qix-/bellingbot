@@ -65,7 +65,7 @@ MODEL_FILES := $(addprefix ${MODEL_DIR}/,${MODELS})
 all:
 	@echo 'Nothing to do - try `make models` or `make run`'
 
-run: models
+run:
 	env TRANSLATION_MODEL_DIR="${MODEL_DIR}" python3 -m bellingbot
 
 models: ${MODEL_FILES}
