@@ -50,6 +50,7 @@ class Handler(object):
         fulldoc = cleandoc(fn.__doc__)
         self.short_doc, self.doc = fulldoc.split('\n', 1)
         self.allowed = GUILD | DM
+        self.aliases = set()
 
     def substitute_help_vars(self, **kwargs):
         self.short_doc = TEMPLATE_VAR_PATTERN.sub(lambda m: kwargs.get(m.group(1), m.group(1)), self.short_doc)
@@ -108,6 +109,7 @@ def alias(name1, *names):
             if name in all_handlers:
                 raise Exception(f"duplicate handler: {name}")
             all_handlers[name] = fn
+            fn.aliases.add(name)
         return fn
     return _wrap
 

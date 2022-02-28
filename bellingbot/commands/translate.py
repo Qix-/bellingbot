@@ -35,7 +35,7 @@ installed_languages = dict(
 @allow_from(GUILD)
 async def translate(message: discord.Message, lang, *_, raw=None):
     """Translate a message or an ad-hoc string between languages
-    Usage: `translate language->language [string]`
+    usage: `translate language->language [string]`
 
     Translates a message or an ad-hoc string between languages.
 

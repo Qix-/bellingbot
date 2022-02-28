@@ -9,7 +9,7 @@ SPLIT_PATTERN = re.compile(r'^-{5,}$', re.M)
 @allow_from(GUILD | DM)
 async def help(message: discord.Message, name=None):
     """Show a list of commands, or more information about a specific command
-    Usage: `help` or `help some-command`
+    usage: `help` or `help some-command`
 
     Shows the main help documentation, or when given the name of a command
     shows more help for that command.
@@ -21,7 +21,10 @@ async def help(message: discord.Message, name=None):
             text = f"Unknown command **{name}** - try just `help` by itself for a list of all bot commands"
             return False
         else:
-            text = f"**{handler.name}**\n{handler.doc}"
+            aliasspec = ""
+            if len(handler.aliases) > 0:
+                aliasspec = f"\naliases: _{', '.join(handler.aliases)}_"
+            text = f"**{handler.name}**{aliasspec}\n{handler.doc}"
     else:
         text = cleandoc(f"""Hi there :wave: I'm the **Bellingcat** bot.
             It looks like you've asked me for some help.
