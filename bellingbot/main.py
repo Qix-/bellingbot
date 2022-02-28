@@ -5,16 +5,10 @@ logging.basicConfig(level=logging.DEBUG, format="%(asctime)s %(levelname)s %(mes
 import asyncio
 import discord
 
+from .util import env
 from . import util as botutil
 
 log = logging.getLogger(__name__)
-
-def env(name, default = None):
-    import os
-    v = os.getenv(name, default)
-    if v is None:
-        raise Exception(f"missing required environment variable: {name}")
-    return v
 
 async def amain():
     log.info("starting the Bellingcat bot")
@@ -23,7 +17,6 @@ async def amain():
     DISCORD_APP_ID = env('DISCORD_APP_ID')
 
     from .commands import handlers
-    print(handlers)
 
     intents = discord.Intents()
     intents.guilds = True
@@ -60,7 +53,7 @@ async def amain():
                 if is_mentioned and message.content.startswith(me_tag):
                     content_string = message.content[len(me_tag):]
 
-            if content_string is not None:
+            if content_string:
                 args = content_string.split()
 
                 if len(args) == 0:
@@ -76,6 +69,7 @@ async def amain():
 
                 ok = False
                 if handler:
+                    log.debug(f"entering handler: {handler.name}")
                     ok = await handler(message, args, raw=content_string)
                 if not ok:
                     await message.add_reaction('❓')

@@ -1,4 +1,5 @@
 import discord
+import re
 from bellingbot import util as botutil
 from inspect import cleandoc, signature, Parameter
 
@@ -6,6 +7,7 @@ all_handlers = dict()
 
 GUILD = (1<<0)
 DM = (1<<1)
+TEMPLATE_VAR_PATTERN = re.compile(r'\{\{(\w+)\}\}')
 
 # Since you can't actually subscript range with `inf` from the math
 # package, we fake it here.
@@ -49,6 +51,10 @@ class Handler(object):
         self.short_doc, self.doc = fulldoc.split('\n', 1)
         self.allowed = GUILD | DM
 
+    def substitute_help_vars(self, **kwargs):
+        self.short_doc = TEMPLATE_VAR_PATTERN.sub(lambda m: kwargs.get(m.group(1), m.group(1)), self.short_doc)
+        self.doc = TEMPLATE_VAR_PATTERN.sub(lambda m: kwargs.get(m.group(1), m.group(1)), self.doc)
+
     async def __call__(self, message: discord.Message, args, raw):
         is_dm = botutil.is_dm_channel(message.channel)
         is_guild = botutil.is_guild_channel(message.channel)
@@ -82,7 +88,7 @@ class Handler(object):
 
         v = await self._fn(message, *args, **kwargs)
         if v == None:
-            v = True
+            v = False
         return v
 
 def allow_from(which):
@@ -102,6 +108,15 @@ def alias(name1, *names):
             if name in all_handlers:
                 raise Exception(f"duplicate handler: {name}")
             all_handlers[name] = fn
+        return fn
+    return _wrap
+
+
+def helpvars(**kwargs):
+    def _wrap(fn):
+        if not isinstance(fn, Handler):
+            fn = Handler(fn)
+        fn.substitute_help_vars(**kwargs)
         return fn
     return _wrap
 

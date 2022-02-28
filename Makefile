@@ -1,6 +1,10 @@
+.PHONY: all run models
+
 MODEL_BASE_URI := https://argosopentech.nyc3.digitaloceanspaces.com/argospm
 
-LANGUAGES := \
+MODEL_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))/model
+
+MODELS := \
 	translate-ar_en-1_0.argosmodel \
 	translate-az_en-1_5.argosmodel \
 	translate-zh_en-1_1.argosmodel \
@@ -56,15 +60,16 @@ LANGUAGES := \
 	translate-uk_en-1_4.argosmodel \
 	translate-vi_en-1_2.argosmodel
 
-FILES := $(addprefix model/,${LANGUAGES})
+MODEL_FILES := $(addprefix ${MODEL_DIR}/,${MODELS})
 
-.PHONY: all run
+all:
+	@echo 'Nothing to do - try `make models` or `make run`'
 
-all: ${FILES}
+run: models
+	env TRANSLATION_MODEL_DIR="${MODEL_DIR}" python3 -m bellingbot
 
-run:
-	python3 -m bellingbot
+models: ${MODEL_FILES}
 
-model/%.argosmodel:
+${MODEL_DIR}/%.argosmodel:
 	@mkdir -p "$(dir $@)"
 	curl -L "${MODEL_BASE_URI}/$(notdir $@)" > "$@"
