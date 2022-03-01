@@ -2,6 +2,7 @@ import re
 import logging
 import os
 import itertools
+import html
 from argostranslate import package, translate
 from .util import *
 from bellingbot.util import env
@@ -10,6 +11,8 @@ log = logging.getLogger(__name__)
 
 MODEL_DIR = env('TRANSLATION_MODEL_DIR')
 LANG_PATTERN = re.compile(r'^(\w+)?(?:->(\w+))?$')
+# XXX Ref https://github.com/Qix-/bellingbot/issues/2
+ENTITY_PATTERN = re.compile(r' (&\w+;) ')
 
 log.info("loading argos translation models...")
 loaded_count = 0
@@ -151,6 +154,7 @@ async def translate(message: discord.Message, lang, *_, raw=None):
 
     log.info(f"translating {len(raw)} characters from {str(fro_lang)} to {str(to_lang)}")
     translated = translator.translate(raw)
+    translated = ENTITY_PATTERN.sub(lambda m: html.unescape(m.group(1)), translated)
     log.info(f"ok")
 
     destspec = ""
